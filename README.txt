@@ -5,59 +5,7 @@
 Pitch: Architectural Design Language for sketching asynchronous systems.
 
 
-// Overview
-
-This is a tool for designing systems.
-
-Motive
-
-    As a data model grows, it becomes difficult for a single human to fit it
-    all in their head.
-
-    If you are designing a system, it is easy to find massaging the model in
-    order to serve one use-case, whilst accidentally breaking three other
-    use-cases in the background.
-
-    This tool compiles all of your use cases against a single data model.
-
-    In this way, it allows mortals to design sophisticated asynchronous
-    systems.
-
-Usage
-
-    Describe a data model in a Wandle Document.
-
-    Add use-cases ('flows').
-
-    Compile the document.
-
-If the compiler does not complain, it indicates that your data model is
-internally consistent.
-
-Potentially we could have the compiler build sequence diagrams of each of
-the use-cases, but we have not yet done that.
-
-
-// Setup
-
-From the base directory,
-
-    # Create a python virtual env
-    python3 -B -m venv venv
-
-    # Activate the venv (Linux)
-    . venv/bin/activate
-
-    # Install the libraries we need
-    pip install -r requirements.txt
-
-    # Run the tool against the sample document
-    python3 -B -m wandle.main `pwd`/doc/sample.wandle
-
-There is a convenience script for lauching, app.
-
-
-// Example of a Wandle Document
+// Example doc
 
 # Note: type Void is implicit.
 
@@ -132,6 +80,60 @@ flow create_person {
 }
 
 
+// Overview
+
+This is a tool for designing systems. It allows you to link the methods
+without having to flesh out their contents.
+
+Motive
+
+    It is often useful to design a system before building it.
+
+    As a design grows, humans lose the ability to fit it all in their head.
+
+    When you lose momentum during a design phase, it is easy to stumble
+    into implementation before you are ready. This leads to a death march.
+
+    This tool allows you to build a substantial data model, and to write
+    use-cases against them.
+
+    When you run the compiler, it checks that all the use-cases still run.
+
+    This helps you avoid changes that suit one use-case, but break five
+    others.
+
+    Wandle allows mortals to design sophisticated asynchronous systems.
+
+Usage
+
+    Describe a data model in a Wandle Document.
+
+    Add use-cases ('flows').
+
+    Compile the document.
+
+If there are inconsistencies, the compiler will find them.
+
+
+// Setup
+
+From the base directory,
+
+    # Create a python virtual env
+    python3 -B -m venv venv
+
+    # Activate the venv (Linux)
+    . venv/bin/activate
+
+    # Install the libraries we need
+    pip install -r requirements.txt
+
+    # Run the tool against the sample document
+    python3 -B -m wandle.main `pwd`/doc/sample.wandle
+
+There is a convenience script for lauching, app.
+
+
 // Document format
 
 Comments: lines that start with hash.
@@ -176,7 +178,7 @@ Code blocks
 
     Declare an un-set variable
 
-        String s.
+        String s;
 
     Declare a set variable
 
@@ -216,13 +218,17 @@ Flows
 
 // Closing notes
 
+It may be useful to generate sequence diagrams from the model. This is not yet
+done.
+
 As of writing, when we parse an asynchronous statement, we should check that
 we are inside an asynchronous context. It should be possible to add this.
 
 Generics cannot inherit or be inherited. It would take work to implement this,
 but it could be done.
 
-At the time of writing, there is no way to declare objects at the global scope.
+At the time of writing, there is no way to declare objects at the global
+scope.
 
-
+Parsing is unsophisticated, and has limited the grammar. Advice welcome.
 
