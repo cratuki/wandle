@@ -1,0 +1,224 @@
+#
+# Hyalos model
+#
+
+class Char;
+class Int;
+class String;
+
+generic List ITEM {
+    sync Void append(ITEM item);
+}
+
+generic Map KEY,VALUE {
+    sync Void put(KEY key, VALUE value);
+}
+
+class Effect is String;
+class SigilH is String;
+
+alias List/Colour to ListPixel;
+alias List/Effect to ListEffect;
+alias List/Sigil to ListSigil;
+alias Map/WebsocketLink,Session to SessionMap;
+
+single Marshal {
+    sync String pack_list_sigil(ListSigil list_sigil);
+    sync ListSigil unpack_list_sigil(String b64_list_sigil);
+    sync String pack_pixel_grid(PixelGrid pixel_grid);
+    sync PixelGrid unpack_pixel_grid(String b64_pixel_grid);
+}
+
+class Colour {
+    Int r;
+    Int g;
+    Int b;
+}
+
+class GridPos {
+    Int px_s;
+    Int px_e;
+}
+
+class DisplayProfile {
+    Int px_height;
+    Int px_width;
+    ListEffect list_effect;
+}
+
+class PixelGrid {
+    DisplayProfile display_profile;
+    ListPixel list_pixel;
+
+    sync Void plot_pixel(GridPos grid_pos, Colour colour);
+}
+
+# demonstrates inheritance
+class OverGrid is PixelGrid {
+    async Void sample_method();
+    async Void another_method(Int a, Int b);
+}
+
+class ClientPixelGrid {
+    PixelGrid pixel_grid;
+
+    sync Void set_pixel_grid(PixelGrid pixel_grid) {
+        self.pixel_grid = pixel_grid;
+    }
+
+    sync Void plot_pixel(GridPos grid_pos, Colour colour) {
+        void = pixel_grid.plot_pixel(grid_pos, colour);
+    }
+}
+
+class ServerPixelGrid {
+    PixelGrid pixel_grid!
+
+    sync Void set_pixel_grid(PixelGrid pixel_grid);
+
+    sync Void plot_pixel(GridPos grid_pos, Colour colour) {
+        void = pixel_grid.plot_pixel(grid_pos, colour);
+    }
+}
+
+class Sigil {
+    SigilH sigil_h;
+    Int px_height;
+    Int px_width;
+    ListPixel list_pixel;
+}
+
+class World;
+
+class Session {
+    ServerPixelGrid server_pixel_grid;
+    WebsocketLink link;
+    Server server;
+    ListSigil list_sigil;
+
+    sync Void init(Server server, ListSigil list_sigil) {
+        self.list_sigil = list_sigil;
+    }
+}
+
+class Cookie;
+
+class Server {
+    World world;
+    SessionMap session_map;
+    ListSigil list_sigil_default!
+
+    async Void cs_greet(WebsocketLink link) {
+        note { example note }
+
+        Session session!
+        void = session.init(self, list_sigil_default);
+        void = session_map.put(link, session);
+
+        # xxx implement pre-set later
+        #Cookie cookie!
+
+        # xxx implement direct assignments later
+        String b64_list_sigil;
+        String b64_pixel_grid;
+
+        b64_list_sigil = Marshal.pack_list_sigil(session.list_sigil);
+        b64_pixel_grid = Marshal.pack_pixel_grid(session.server_pixel_grid.pixel_grid);
+
+        # xxx not sure what I was trying to do here;
+        #void << sc_welcome(b64_list_sigil, b64_pixel_grid);
+    }
+
+    async Void on_key(Int key);
+
+    async Void on_mouse_click(GridPos grid_pos);
+}
+
+class WebsocketLink {
+    Server server;
+    AppPage client;
+}
+
+class Terminal {
+    AppPage app_page!
+
+    ListSigil list_sigil;
+    ClientPixelGrid client_pixel_grid;
+
+    sync Void set_list_sigil(ListSigil list_sigil);
+
+    sync Void set_pixel_grid(PixelGrid pixel_grid) {
+        void = client_pixel_grid.set_pixel_grid(pixel_grid);
+    }
+
+    async Void on_key(Int k) {
+        void << app_page.on_key(k);
+    }
+    async Void on_mouse_click(GridPos grid_pos) {
+        void << app_page.on_mouse_click(grid_pos);
+    }
+
+    async Void plot_pixel(GridPos grid_pos, Colour colour) {
+        void = client_pixel_grid.plot_pixel(grid_pos, colour);
+    }
+}
+
+class AppPage {
+    Terminal terminal!
+    WebsocketLink link!
+
+    async Void connect() {
+        void << link.server.cs_greet(link);
+    }
+
+    async Void sc_welcome(String b64_list_sigil, String b64_pixel_grid) {
+        ListSigil list_sigil;
+        list_sigil = Marshal.unpack_list_sigil(b64_list_sigil);
+        void = terminal.set_list_sigil(list_sigil);
+
+        PixelGrid pixel_grid;
+        pixel_grid = Marshal.unpack_pixel_grid(b64_pixel_grid);
+        void = terminal.set_pixel_grid(pixel_grid);
+    }
+
+    async Void on_key(Int k) {
+        void << link.server.on_key(k);
+    }
+    async Void on_mouse_click(GridPos grid_pos) {
+        void << link.server.on_mouse_click(grid_pos);
+    }
+
+    async Void plot_pixel(GridPos grid_pos, Colour colour) {
+        void << terminal.plot_pixel(grid_pos, colour);
+    }
+}
+
+single User {
+    async Void presses_key(AppPage app_page) {
+        Int k!
+    }
+}
+
+
+
+flow server_startup {
+    Server server!
+
+    note {
+        There will be business-logic to creating the world that exists on the
+        server. To be filled in.
+    }
+}
+
+flow client_connects {
+    AppPage app_page!
+
+    void << app_page.connect();
+
+    note {
+        By now, we have a populated initial screen state.
+    }
+}
+
+flow basic_user_interaction {
+}

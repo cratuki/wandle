@@ -1,0 +1,72 @@
+# Note: type Void is implicit.
+
+# "Stubbed" classes
+class Int;
+class String;
+
+generic List ITEM {
+    sync Void add(ITEM item);
+    sync ITEM get(Int int);
+}
+
+generic Map K,V {
+    sync Void put(K k, V v);
+    sync V get(K k);
+}
+
+single Io {
+    sync Void print(String s);
+}
+
+class Person {
+    Int age;
+    String name;
+    List/String list_note;
+
+    sync Void init(String name, Int age, List/String lst) {
+        self.name = name;
+        self.list_note = lst;
+    }
+
+    sync Void print_name() {
+        void = Io.print(self.name);
+    }
+}
+
+alias Map/String,Person to PersonMap;
+
+class Org {
+    PersonMap person_map;
+
+    sync Void init(PersonMap person_map) {
+        self.person_map = person_map;
+    }
+
+    async Void register_person(Person person) {
+        void = self.person_map.put(person.name, person);
+    }
+}
+
+flow create_person {
+    String name!
+
+    Int age!
+
+    List/String lst!
+    String sample_note!
+    void = lst.add(sample_note);
+
+    Person person!
+    void = person.init(name, age, lst);
+
+
+    Org org!
+    PersonMap person_map!
+    void = org.init(person_map); # sync call
+    void << org.register_person(person); # async call
+
+
+    Person person_2;
+    person_2 = person;
+}
+
