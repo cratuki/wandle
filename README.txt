@@ -2,8 +2,7 @@
 # Wandle
 #
 
-Pitch: Architectural Design Language for sketching asynchronous systems. The
-resulting designs naturally translate into coroutine-centric implementation.
+Pitch: Architectural Design Language for sketching asynchronous systems.
 
 
 // Example doc
@@ -83,42 +82,44 @@ flow create_person {
 
 // Overview
 
-This is a tool for designing systems. It allows you to link the methods
-without having to flesh out their contents.
+This is a tool for designing systems.
 
-Motive
+The approach,
 
-    It is often useful to design a system before building it.
+    Design your data model.
 
-    As a design grows, humans lose the ability to fit it all in their head.
+    Write use-cases against that data model. ('flows')
 
-    When you lose momentum during a design phase, it is easy to stumble
-    into implementation before you are ready. This leads to a death march.
+    Run the compiler, and see if it highlights inconsistencies.
 
-    This tool allows you to build a substantial data model, and to write
-    use-cases against them.
+    When your design is done, implement the result in a language that offers
+    coroutines.
 
-    When you run the compiler, it checks that all the use-cases still run.
+You might ask, what is the value-add of writing a Wandle design over diving in
+to implementation?
 
-    This helps you avoid changes that suit one use-case, but break five
-    others.
+    Wandle allows you to create methods without having to implement them.
 
-    Wandle allows mortals to design sophisticated asynchronous systems.
+    The Wandle compiler will type-check the method calls, but - unlike an
+    implementation language - does not require you to fill in all the methods.
 
-What is unique about Wandle vs other design systems?
+    This keeps the focus on high-level considerations.
 
-    Wandle distinguishes synchronous and asynchronous activity. A Wandle
-    design should easily translate into coroutine-oriented code.
+    Imagine you make a change that serves one use-case, but breaks five others.
+    The Wandle compiler will tell you about that, before you have invested any
+    effort in implementation.
 
-Usage
+Wandle allows mortals to design sophisticated asynchronous systems without
+being drawn into premature implementation.
 
-    Describe a data model in a Wandle Document.
+What is special about Wandle compared to other design systems?
 
-    Add use-cases ('flows').
+    Wandle emphasises the difference between synchronous and asynchronous
+    activity. As a result, a Wandle design should easily translate into
+    coroutine-oriented code.
 
-    Compile the document.
-
-If there are inconsistencies, the compiler will find them.
+Ecosystems that this design approach would work well for: python asyncio, rust
+coroutines, lua coroutines, julia coroutines.
 
 
 // Setup
