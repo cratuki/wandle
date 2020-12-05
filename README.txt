@@ -2,7 +2,8 @@
 # Wandle
 #
 
-Pitch: Architectural Design Language for sketching asynchronous systems.
+Pitch: Architectural Design Language for sketching asynchronous systems. The
+resulting designs naturally translate into coroutine-centric implementation.
 
 
 // Example doc
@@ -103,6 +104,11 @@ Motive
     others.
 
     Wandle allows mortals to design sophisticated asynchronous systems.
+
+What is unique about Wandle vs other design systems?
+
+    Wandle distinguishes synchronous and asynchronous activity. A Wandle
+    design should easily translate into coroutine-oriented code.
 
 Usage
 
