@@ -121,6 +121,10 @@ What is special about Wandle compared to other design systems?
 Ecosystems that this design approach would work well for: python asyncio, rust
 coroutines, lua coroutines, julia coroutines.
 
+There is similar purpose between Wandle and CSP. CSP is oriented around
+channels. In contrast, Wandle comes at concurrency from the same direction as
+coroutines.
+
 
 // Setup
 
