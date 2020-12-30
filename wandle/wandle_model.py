@@ -238,8 +238,8 @@ def populate_function(node, wandle_model, wandle_function):
                     msg = ' '.join([
                         "Inconsistent type in copy statement",
                         "%s = %s."%(lhs_dotref, rhs_dotref),
-                        "LHS is %s,"%(lhs_wandle_context.wandle_class.name),
-                        "RHS is %s."%(rhs_wandle_context.wandle_class.name),
+                        "LHS is %s,"%(lhs_wandle_context),
+                        "RHS is %s."%(rhs_wandle_context),
                     ])
                     raise SyntaxError(msg)
 
@@ -485,7 +485,7 @@ class WandleModel:
         return False
 
     def stub_specific(self, name, b_placeholder=False):
-        if self.__is_name_known(name):
+        if self.__is_name_known(name) and not b_placeholder:
             raise Exception("Duplicate name definition, %s"%(name))
 
         wandle_class = WandleClass(
@@ -1179,6 +1179,7 @@ def wandle_model_build(parse_tree):
                     if s == ',':
                         continue
                     lst_template_type.append(s)
+
                     wandle_model.stub_specific(name=s, b_placeholder=True)
 
                 wandle_model.stub_generic(
@@ -1265,6 +1266,8 @@ def wandle_model_build(parse_tree):
             recurs(sub)
             context_stack.pop()
         #
+        elif rule_name == '_generic_stub':
+            return
         elif rule_name == '_generic_impl':
             name = node[1].value
             sub = node[3]
@@ -1514,6 +1517,8 @@ def wandle_model_build(parse_tree):
             stack.append(wandle_class)
             recurs(sub)
             stack.pop()
+        elif rule_name == '_generic_stub':
+            pass
         elif rule_name == '_generic_impl':
             fname = node[1].value
             sub = node[3]

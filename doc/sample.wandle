@@ -6,6 +6,8 @@ class Char;
 class Int;
 class String;
 
+generic Stub ITEM;
+
 generic List ITEM {
     sync Void append(ITEM item);
 }
