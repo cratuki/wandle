@@ -40,6 +40,7 @@ def _cb_var_ready():        return _type, _snake, '!'
 def _cb_var_async_set():    return _type, _snake, _cb_async_call
 def _cb_var_sync_set():     return _type, _snake, _cb_sync_call
 def _cb_note():             return 'note', '{', ZeroOrMore(_note_word), '}'
+def _cb_return():           return 'return', OrderedChoice([_cb_dot_ref, _single_name]), ';'
 def _cb_grammar():          return '{', ZeroOrMore(OrderedChoice([
                                 _cb_sync_copy,
                                 _cb_sync_from,
@@ -49,7 +50,9 @@ def _cb_grammar():          return '{', ZeroOrMore(OrderedChoice([
                                 _cb_var_sync_set,
                                 _cb_async_from,
                                 _cb_note,
-                            ])), '}'
+                            ])), Optional([
+                                _cb_return,
+                            ]), '}'
 
 def _normal_sig_pair():     return _type, _snake
 def _method_sig():          return '(', Optional(_normal_sig_pair, ZeroOrMore(',', _normal_sig_pair)), ')'
@@ -111,7 +114,7 @@ def _grammar():             return ZeroOrMore(
                                     _generic_gram,
                                     _alias_gram,
                                     _flow_gram,
-                                ])
+                                ]),
                             ), EOF
 
 def arpeggio_parse_go(wandle_src):

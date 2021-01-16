@@ -169,11 +169,18 @@ def populate_function(node, wandle_model, wandle_function):
         wandle_model=wandle_model,
         compile_container=wandle_function.compile_container)
     for param in wandle_function.lst_param:
+        print(param)
         wandle_object = param.wandle_class.as_wandle_object()
         wandle_object.mark_ready()
         local_scope.set(
             name=param.name,
             wandle_object=wandle_object)
+
+    # This is a var where we will keep track of whether we saw a valid return
+    # or not. It is only relevant when we return non-Void.
+    b_valid_return = False
+    if wandle_function.rtype.name == 'Void':
+        b_valid_return = True
 
     # Iterate through the code block node.
     for our_node in node[1:-1]:
@@ -409,6 +416,24 @@ def populate_function(node, wandle_model, wandle_function):
                 statement.wandle_class = wandle_class
                 statement.lhs_dotref = name
                 wandle_function.add_statement(statement)
+            elif rule_name == '_cb_return':
+                # Type check the return against the scope we are in.
+                #
+                # This is what the method signature says we should return.
+                sig_rtype_wandle_class = wandle_function.rtype
+
+                # This is what we return.
+                rhs_dotref = [n.value for n in our_node[1] if n != '.']
+                rhs_wandle_context = resolve_dotref_sync_only(
+                    lst_dotref=rhs_dotref,
+                    local_scope=local_scope)
+                got_rtype_wandle_class = rhs_wandle_context.wandle_class
+
+                if sig_rtype_wandle_class != got_rtype_wandle_class:
+                    raise Exception(
+                        "Incorrect return type for method %s."%(
+                            wandle_function.name))
+                b_valid_return = True
             else:
                 raise SyntaxError('rule_name %s is not handled'%(rule_name))
         except SyntaxError as e:
@@ -418,6 +443,12 @@ def populate_function(node, wandle_model, wandle_function):
             print("[!] Syntax error in |%s|"%(' '.join(sb)))
             print(e.message)
             raise Exception("Syntax error. See log.")
+
+    if not b_valid_return:
+        raise Exception(
+            "Method %s must return %s"%(
+                wandle_function.name,
+                wandle_function.rtype.name))
 
 
 # --------------------------------------------------------
@@ -1090,7 +1121,7 @@ class WandleSingle:
             wandle_function=wandle_function)
 
     def set_object(self, name, wandle_object):
-        self.wandle_class.set_fab_sync(
+        self.wandle_class.set_object(
             name=name,
             wandle_object=wandle_object)
         self.wandle_object.set_object(
@@ -1309,11 +1340,17 @@ def wandle_model_build(parse_tree):
                 if sig_pair.value == ',':
                     continue
 
+                if len(sig_pair) != 2:
+                    raise Exception("Invalid sig_pair |%s|"%(str(sig_pair)))
+
                 param_cstring = sig_pair[0].value
                 param_name = sig_pair[1].value
 
                 wandle_class = wandle_model.get_class(
                     cstring=param_cstring)
+                if wandle_class == None:
+                    raise Exception(
+                        "Wandle class %s does not exist."%(param_cstring))
                 param = Param(
                     wandle_class=wandle_class,
                     name=param_name)
